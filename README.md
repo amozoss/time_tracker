@@ -1,8 +1,6 @@
 time_tracker
 ============
 
-Copyright (c) 2013 Dan Willoughby
-
 This file is part of time_tracker.
 
 time_tracker is free software: you can redistribute it and/or modify
