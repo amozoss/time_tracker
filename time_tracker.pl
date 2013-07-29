@@ -37,6 +37,9 @@ use Data::Dumper;
 use JSON;
 use POSIX qw/strftime/;
 use Getopt::Std;
+use Time::Piece;
+use Time::Seconds;
+
  
 # Global variables (not sure how to use format and write without globals)
 my $reportHours;
@@ -56,7 +59,7 @@ my $chargeCodeList; # List of recently used charge codes
 # Program options
 ####################
 my %opts;
-getopts('bcdehrsuv', \%opts);
+getopts('bcdehrsuvw', \%opts);
  
 print usage() and exit(0) if $opts{'h'};
 my $change = $opts{'c'};
@@ -66,7 +69,8 @@ my $report = $opts{'r'};
 my $stop = $opts{'s'};
 my $update = $opts{'u'};
 my $verbose = $opts{'v'};
- 
+my $weeklyReport = $opts{'w'};
+
 # Report formatting
 $~ = 'REPORT';
 $^ = 'REPORT_TOP';
@@ -92,6 +96,33 @@ if ($report) {
     generate_report();
   }
   exit();
+}
+elsif ($weeklyReport) {
+  no warnings 'uninitialized';
+    if ($ARGV[0] =~ /^\d{8}$/) {
+      my $format = '%Y%m%d';
+      my $currentDate = $ARGV[0];
+      my $count = 0; # count to 7 days
+          print "$count ";
+        do {
+          print "\n$currentDate\n";
+          $time = load_time_at_date($currentDate);
+          generate_report();
+          $currentDate = Time::Piece->strptime($currentDate, $format);
+          $currentDate = $currentDate - ONE_DAY;
+          $currentDate = $currentDate->ymd('');
+ 
+          $count++;
+        } while ($count < 7);
+ 
+     $time = load_time_at_date($ARGV[0]);
+     print "Report for $ARGV[0]\n";
+     generate_report();
+   }
+   else {
+     generate_report();
+   }
+   exit();
 }
 elsif ($edit) {
   $chargeCode = $ARGV[0];
@@ -418,6 +449,12 @@ sub usage {
                       of the current day.
  
         -v        Displays verbose output.
+        
+        -w <date> Generates and displays daily reports from the specified <date> to
+                  the previous 6 days.
+                  If no <date> is specified the current date will be used.
+                  <date> is entered YYYYmmdd (EX. 20130705 for July 5, 2013).
+
  
         ';
 }
