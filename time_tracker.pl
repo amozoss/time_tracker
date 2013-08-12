@@ -319,7 +319,7 @@ sub generate_report {
   print "\n";
   my $totalHours;
  
-  foreach my $key_top ( keys %$time )
+  foreach my $key_top ( sort { $a cmp $b } keys %$time )
   {
     my $hours;
     my $array = $$time{$key_top};
