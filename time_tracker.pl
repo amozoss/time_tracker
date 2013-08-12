@@ -34,7 +34,7 @@
 use strict;
 use warnings;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 use POSIX qw/strftime/;
 use Getopt::Std;
 use Time::Piece;
@@ -399,7 +399,7 @@ sub read_from_file {
 sub write_to_file {
   my $data  = shift;
   open my $fh, ">", $filename;
-  print $fh encode_json($data);#Data::Dumper->Dump([$data],['*DATA']);
+  print $fh JSON::XS->new->pretty(1)->encode($data);#Data::Dumper->Dump([$data],['*DATA']);
   close $fh;
 }
  
