@@ -248,7 +248,7 @@ sub add_charge_code_to_list {
       }
     }
     if (!$exists) {# charge code doesn't exist in list
-      push $chargeCodeList, $cc;
+      push @$chargeCodeList, $cc;
     }
   }
 }
