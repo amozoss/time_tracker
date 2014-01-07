@@ -32,7 +32,7 @@
 #######################################################
  
 use strict;
-use warnings;
+#use warnings;
 use Data::Dumper;
 use JSON::XS;
 use POSIX qw/strftime/;
@@ -46,7 +46,7 @@ my $reportHours;
 my $reportChargeCode;
 my $reportDescription;
 my $reportListIndex;
-my $filename = "/home/dwilloughby/home/training/time/time_card";
+my $filename = "/home/dan/Documents/time_tracker/time_card";
  
  
 my $timeCard;# Stores each days data
@@ -99,30 +99,32 @@ if ($report) {
 }
 elsif ($weeklyReport) {
   no warnings 'uninitialized';
-    if ($ARGV[0] =~ /^\d{8}$/) {
-      my $format = '%Y%m%d';
-      my $currentDate = $ARGV[0];
-      my $count = 0; # count to 7 days
-          print "$count ";
-        do {
-          print "\n$currentDate\n";
-          $time = load_time_at_date($currentDate);
-          generate_report();
-          $currentDate = Time::Piece->strptime($currentDate, $format);
-          $currentDate = $currentDate - ONE_DAY;
-          $currentDate = $currentDate->ymd('');
- 
-          $count++;
-        } while ($count < 7);
- 
-     $time = load_time_at_date($ARGV[0]);
-     print "Report for $ARGV[0]\n";
-     generate_report();
-   }
-   else {
-     generate_report();
-   }
-   exit();
+  my $format = '%Y%m%d';
+  my $currentDate;
+  if ($ARGV[0] =~ /^\d{8}$/) {
+    $currentDate = $ARGV[0];
+  }
+  else {
+    $currentDate = get_current_date();
+  }
+
+  my $count = 0; # count to 7 days
+  print "$count ";
+  do {
+    print "\n$currentDate\n";
+    $time = load_time_at_date($currentDate);
+    generate_report();
+    $currentDate = Time::Piece->strptime($currentDate, $format);
+    $currentDate = $currentDate - ONE_DAY;
+    $currentDate = $currentDate->ymd('');
+
+    $count++;
+  } while ($count < 7);
+
+  $time = load_time_at_date($ARGV[0]);
+  print "Report for $ARGV[0]\n";
+  generate_report();
+  exit();
 }
 elsif ($edit) {
   $chargeCode = $ARGV[0];
@@ -318,6 +320,7 @@ sub delete_entry {
 sub generate_report {
   print "\n";
   my $totalHours;
+  my %weekReport = ();
  
   foreach my $key_top ( sort { $a cmp $b } keys %$time )
   {
