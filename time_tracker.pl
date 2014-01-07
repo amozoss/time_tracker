@@ -32,9 +32,9 @@
 #######################################################
  
 use strict;
-use warnings;
+#use warnings;
 use Data::Dumper;
-use JSON;
+use JSON::XS;
 use POSIX qw/strftime/;
 use Getopt::Std;
 use Time::Piece;
@@ -46,7 +46,7 @@ my $reportHours;
 my $reportChargeCode;
 my $reportDescription;
 my $reportListIndex;
-my $filename = "~/Documents/time_tracker/time_card";
+my $filename = "./time_card";
  
  
 my $timeCard;# Stores each days data
@@ -99,30 +99,32 @@ if ($report) {
 }
 elsif ($weeklyReport) {
   no warnings 'uninitialized';
-    if ($ARGV[0] =~ /^\d{8}$/) {
-      my $format = '%Y%m%d';
-      my $currentDate = $ARGV[0];
-      my $count = 0; # count to 7 days
-          print "$count ";
-        do {
-          print "\n$currentDate\n";
-          $time = load_time_at_date($currentDate);
-          generate_report();
-          $currentDate = Time::Piece->strptime($currentDate, $format);
-          $currentDate = $currentDate - ONE_DAY;
-          $currentDate = $currentDate->ymd('');
- 
-          $count++;
-        } while ($count < 7);
- 
-     $time = load_time_at_date($ARGV[0]);
-     print "Report for $ARGV[0]\n";
-     generate_report();
-   }
-   else {
-     generate_report();
-   }
-   exit();
+  my $format = '%Y%m%d';
+  my $currentDate;
+  if ($ARGV[0] =~ /^\d{8}$/) {
+    $currentDate = $ARGV[0];
+  }
+  else {
+    $currentDate = get_current_date();
+  }
+
+  my $count = 0; # count to 7 days
+  print "$count ";
+  do {
+    print "\n$currentDate\n";
+    $time = load_time_at_date($currentDate);
+    generate_report();
+    $currentDate = Time::Piece->strptime($currentDate, $format);
+    $currentDate = $currentDate - ONE_DAY;
+    $currentDate = $currentDate->ymd('');
+
+    $count++;
+  } while ($count < 7);
+
+  $time = load_time_at_date($ARGV[0]);
+  print "Report for $ARGV[0]\n";
+  generate_report();
+  exit();
 }
 elsif ($edit) {
   $chargeCode = $ARGV[0];
@@ -318,8 +320,9 @@ sub delete_entry {
 sub generate_report {
   print "\n";
   my $totalHours;
+  my %weekReport = ();
  
-  foreach my $key_top ( keys %$time )
+  foreach my $key_top ( sort { $a cmp $b } keys %$time )
   {
     my $hours;
     my $array = $$time{$key_top};
@@ -399,7 +402,7 @@ sub read_from_file {
 sub write_to_file {
   my $data  = shift;
   open my $fh, ">", $filename;
-  print $fh encode_json($data);#Data::Dumper->Dump([$data],['*DATA']);
+  print $fh JSON::XS->new->pretty(1)->encode($data);#Data::Dumper->Dump([$data],['*DATA']);
   close $fh;
 }
  
