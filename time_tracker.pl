@@ -108,12 +108,15 @@ elsif ($weeklyReport) {
     $currentDate = get_current_date();
   }
 
+  my $totalTime = 0;
+
   my $count = 0; # count to 7 days
   print "$count ";
   do {
     print "\n$currentDate\n";
     $time = load_time_at_date($currentDate);
-    generate_report();
+    $totalTime += generate_report();
+
     $currentDate = Time::Piece->strptime($currentDate, $format);
     $currentDate = $currentDate - ONE_DAY;
     $currentDate = $currentDate->ymd('');
@@ -123,7 +126,10 @@ elsif ($weeklyReport) {
 
   $time = load_time_at_date($ARGV[0]);
   print "Report for $ARGV[0]\n";
-  generate_report();
+  $totalTime += generate_report();
+
+  $totalTime = dhms2sec($totalTime);
+  print "\nWeek total time: $totalTime\n";
   exit();
 }
 elsif ($edit) {
@@ -331,7 +337,7 @@ sub generate_report {
     if (ref($array) eq 'ARRAY' ) {
       for my $index (@$array)
       {
-        my $partial = ($$index{"end"} - $$index{"start"})/3600;
+        my $partial = ($$index{"end"} - $$index{"start"});
         $hours += $partial;
         print "Partial hour: $partial\n" if $verbose;
         no warnings 'uninitialized';
@@ -342,7 +348,7 @@ sub generate_report {
       }
    
       $totalHours += $hours;
-      $reportHours = $hours;
+      $reportHours = dhms2sec($hours);
       $reportChargeCode = $key_top;
       write ;
  
@@ -352,10 +358,20 @@ sub generate_report {
   my $finishTime = time + $timeNeeded;
  
   $finishTime = scalar strftime("%H:%M:%S", localtime ($finishTime));
+  my $totalHoursString = dhms2sec($totalHours);
  
-  print "\nTotal: $totalHours | Go Home: $finishTime\n";
+  print "\nTotal: $totalHoursString\n"; 
+  return $totalHours;
  
 }
+
+sub dhms2sec {
+  my $s= shift;
+  my $ts=new Time::Seconds $s;
+  return $ts->pretty;
+  
+}
+
  
 sub update_last_entry {
   my $time = shift;
@@ -473,11 +489,11 @@ $reportListIndex, $reportChargeCode
 .
  
 format REPORT_TOP =
-Charge Code   Hours    Description
-============= ======== ===============================================
+Charge Code   Hours                                Description
+============= ==================================== ===============================================
 .
  
 format REPORT =
-@<<<<<<<<<<<< @<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+@<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 $reportChargeCode, $reportHours, $reportDescription
 .
