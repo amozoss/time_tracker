@@ -39,6 +39,7 @@ use POSIX qw/strftime/;
 use Getopt::Std;
 use Time::Piece;
 use Time::Seconds;
+use DateTime::Format::Strptime;
 
  
 # Global variables (not sure how to use format and write without globals)
@@ -108,12 +109,20 @@ elsif ($weeklyReport) {
     $currentDate = get_current_date();
   }
 
+  my @days = ("Nothing", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
   my $totalTime = 0;
 
   my $count = 0; # count to 7 days
   print "$count ";
   do {
-    print "\n$currentDate\n";
+    $currentDate = Time::Piece->strptime($currentDate, $format);
+
+    my $day = $currentDate->strftime('%u');
+    $day = @days[$day];
+    my $readableDate = $currentDate->strftime('%b. %d %Y');
+    print "\n---------------$day, $readableDate---------------\n";
+
+    $currentDate = $currentDate->ymd('');
     $time = load_time_at_date($currentDate);
     $totalTime += generate_report();
 
@@ -125,7 +134,6 @@ elsif ($weeklyReport) {
   } while ($count < 7);
 
   $time = load_time_at_date($ARGV[0]);
-  print "Report for $ARGV[0]\n";
   $totalTime += generate_report();
 
   $totalTime = dhms2sec($totalTime);
