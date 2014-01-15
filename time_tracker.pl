@@ -47,7 +47,7 @@ my $reportHours;
 my $reportChargeCode;
 my $reportDescription;
 my $reportListIndex;
-my $filename = "/home/dan/Documents/time_tracker/time_card";
+my $filename = "/home/dan/Documents/time_tracker/.time_card";
  
  
 my $timeCard;# Stores each days data
