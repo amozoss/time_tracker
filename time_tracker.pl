@@ -52,7 +52,6 @@ my $reportListIndex;
 my $scriptDir = dirname(abs_path($0));
 my $filename = "$scriptDir/.time_card";
  
- 
 my $timeCard;# Stores each days data
 my $time; # stores times of each day
 my $chargeCode;
@@ -170,6 +169,7 @@ foreach my $element (@$chargeCodeList) {
   $i++;
   write;
 }
+
 print "\n";
 # Change back to report writer
 $~ = 'REPORT';
@@ -404,7 +404,6 @@ sub dhms2sec
   my $s= shift;
   my $ts=new Time::Seconds $s;
   return $ts->pretty;
-  
 }
 
  
@@ -444,7 +443,6 @@ sub read_from_file
       close $fh;
     }
     return decode_json($json);
- 
   }
   else {
     my %timeCard = ();
@@ -507,7 +505,7 @@ sub usage
                   12 minutes. When <amount> is positive it will add to the total
                   tracked time, and subtract when negative. Works with QR numbers.
 
-                  EX. If you charge code is WORK.
+                  EX. If the charge code is WORK.
                   "time_tracker -e WORK -1.2" subtracts 1.2 from WORK total time.
  
         -h        Displays help menu.
