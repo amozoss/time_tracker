@@ -1,17 +1,16 @@
 time_tracker
 ============
 
-This file is part of time_tracker.
 
-time_tracker is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-any later version.
+## Install
+Install the missing modules using 'cpan \<module name\>'
+  
+  For example, time tracker requires the module JSON::XS. To install the module run the command 
+  
+        cpan JSON::XS  
+  
 
-time_tracker is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+## Usage
+For a list of options and help run
 
-You should have received a copy of the GNU General Public License
-along with time_tracker.  See gpl3.txt. If not, see <http://www.gnu.org/licenses/>.
+        perl time_tracker.pl -h
