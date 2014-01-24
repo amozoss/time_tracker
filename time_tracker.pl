@@ -371,7 +371,6 @@ sub generate_week_report
   my $totalTime = 0;
 
   my $count = 0; # count to 7 days
-  print "$count ";
   do {
     $currentDate = Time::Piece->strptime($currentDate, $format);
 
