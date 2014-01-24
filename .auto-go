@@ -1,8 +1,0 @@
-#!/bin/bash
-
-
-~/Documents/time_tracker/time_tracker.pl -s
-
-git commit -am 'update time_card'
-git pull origin master
-git push origin master
