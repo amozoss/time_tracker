@@ -40,6 +40,8 @@ use Getopt::Std;
 use Time::Piece;
 use Time::Seconds;
 use DateTime::Format::Strptime;
+use Cwd 'abs_path';
+use File::Basename;
 
  
 # Global variables (not sure how to use format and write without globals)
@@ -47,7 +49,9 @@ my $reportHours;
 my $reportChargeCode;
 my $reportDescription;
 my $reportListIndex;
-my $filename = "/home/dan/Documents/time_tracker/.time_card";
+
+my $scriptDir = dirname(abs_path($0));
+my $filename = "$scriptDir/.time_card";
  
  
 my $timeCard;# Stores each days data
