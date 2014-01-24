@@ -86,7 +86,8 @@ $chargeCodeList = get_charge_code_list();
  
 print Dumper $timeCard and exit if $opts{'b'};
  
-if ($report) {
+if ($report) 
+{
   no warnings 'uninitialized';
   if ($ARGV[0] =~ /^\d{8}$/) {
     $time = load_time_at_date($ARGV[0]);
@@ -98,49 +99,12 @@ if ($report) {
   }
   exit();
 }
-elsif ($weeklyReport) {
-  no warnings 'uninitialized';
-  my $format = '%Y%m%d';
-  my $currentDate;
-  if ($ARGV[0] =~ /^\d{8}$/) {
-    $currentDate = $ARGV[0];
-  }
-  else {
-    $currentDate = get_current_date();
-  }
-
-  my @days = ("Nothing", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-  my $totalTime = 0;
-
-  my $count = 0; # count to 7 days
-  print "$count ";
-  do {
-    $currentDate = Time::Piece->strptime($currentDate, $format);
-
-    my $day = $currentDate->strftime('%u');
-    $day = @days[$day];
-    my $readableDate = $currentDate->strftime('%b. %d %Y');
-    print "\n---------------$day, $readableDate---------------\n";
-
-    $currentDate = $currentDate->ymd('');
-    $time = load_time_at_date($currentDate);
-    $totalTime += generate_report();
-
-    $currentDate = Time::Piece->strptime($currentDate, $format);
-    $currentDate = $currentDate - ONE_DAY;
-    $currentDate = $currentDate->ymd('');
-
-    $count++;
-  } while ($count < 7);
-
-  $time = load_time_at_date($ARGV[0]);
-  $totalTime += generate_report();
-
-  $totalTime = dhms2sec($totalTime);
-  print "\nWeek total time: $totalTime\n";
-  exit();
+elsif ($weeklyReport)
+{
+  generate_week_report();
 }
-elsif ($edit) {
+elsif ($edit)
+{
   $chargeCode = $ARGV[0];
   my $amount = $ARGV[1];
   get_charge_code_from_list($chargeCode);
@@ -149,7 +113,8 @@ elsif ($edit) {
   generate_report();
   exit();
 }
-elsif ($change) {
+elsif ($change)
+{   
   my $oldChargeCode = $ARGV[0];
   my $newChargeCode = $ARGV[1];
   $oldChargeCode = get_charge_code_from_list($oldChargeCode);
@@ -157,27 +122,32 @@ elsif ($change) {
   change_entry($oldChargeCode, $newChargeCode);
   write_to_file ($timeCard);
   generate_report();
-  # if the deleted charge code was the last entry,don't exit and prompt the user to enter another charge code
+  # if the deleted charge code was the last entry,don't exit and
+  # prompt the user to enter another charge code
   if ($oldChargeCode ne $$time{"LAST"}) {
     exit();
   }
 }
-elsif ($delete) {
+elsif ($delete)
+{  
   $chargeCode = $ARGV[0];
   get_charge_code_from_list($chargeCode);
   delete_entry($chargeCode);
   write_to_file ($timeCard);
-  # if the deleted charge code was the last entry,don't exit and prompt the user to enter another charge code
+  # if the deleted charge code was the last entry,don't exit and
+  # prompt the user to enter another charge code
   if ($chargeCode ne $$time{"LAST"}) {
     exit();
   }
 }
-elsif ($stop) {
+elsif ($stop)
+{   
   update_last_entry($time);
   write_to_file ($timeCard);
   exit();
 }
-elsif ($update) {
+elsif ($update)
+{ 
   $chargeCode = $$time{"LAST"};
   update_last_entry($time);
   write_to_file($timeCard);
@@ -231,7 +201,8 @@ generate_report();
 ###############
 # Sub routines
 ################
-sub get_charge_code_list {
+sub get_charge_code_list
+{
   my @chargeCodeList = ();
   if (defined $$timeCard{"codes"} ) {
     print "Charge Code list defined\n" if $verbose;
@@ -246,14 +217,15 @@ sub get_charge_code_list {
 }
  
 # assumes get_charge_code_list has been called previously and $chargeCodeList contains the array
-sub add_charge_code_to_list {
+sub add_charge_code_to_list
+{
   if ($_[0] =~ m/^\d{1,2}$/) {
     print "Reading in ChargeCode\n" if $verbose;
   }
   else {
     my $cc = $_[0];
  
-#determine if code is in the array
+    #determine if code is in the array
     my $exists = 0;
     foreach (@$chargeCodeList) {
       if ($cc eq $_) {
@@ -267,7 +239,8 @@ sub add_charge_code_to_list {
 }
  
 # assumes get_charge_code_list has been called previously and $chargeCodeList contains the array
-sub get_charge_code_from_list {
+sub get_charge_code_from_list
+{
   my $count = 0 + @$chargeCodeList;
  
   if ($_[0] =~ m/^\d{1,2}$/) { # Check if array contains a charge code otherwise die
@@ -282,11 +255,13 @@ sub get_charge_code_from_list {
   return $chargeCode;
 }
  
-sub get_current_date {
+sub get_current_date
+{
   return strftime "%Y%m%d", localtime;
 }
  
-sub load_time_at_date {
+sub load_time_at_date 
+{
   my %time = ();
   my $date = $_[0]; # load first parameter
  
@@ -303,35 +278,39 @@ sub load_time_at_date {
  
 }
  
-sub edit_entry {
+sub edit_entry
+{
   my $editChargeCode = $_[0];
   my $amount = $_[1];
   my %editRecord = ();
   my $editTime = time() + ($amount*3600);
   %editRecord = ( 'text' => $description, 'start' => time(), 'end' => $editTime);
-# Push the record into the beginning of chargeCode array
+  # Push the record into the beginning of chargeCode array
   unshift @{$$time{$editChargeCode}}, \%editRecord;
   print "\nEditing $editChargeCode for $amount\n";
 }
  
-sub change_entry {
+sub change_entry 
+{
   my $deleteEntry = $_[0];
   my $changeEntry = $_[1];
   my $deletedEntry = delete $$time{$deleteEntry};
-# Push the record into the chargeCode array
+  # Push the record into the chargeCode array
   foreach (@{$deletedEntry}) {
     push @{$$time{$changeEntry}}, $_;
   }
   print "Changing $deleteEntry to $changeEntry\n";
 }
  
-sub delete_entry {
+sub delete_entry
+{
   my $deleteEntry = $_[0];
   my $deletedEntry = delete $$time{$deleteEntry};
   print "Deleting $deleteEntry\n";
 }
  
-sub generate_report {
+sub generate_report
+{
   print "\n";
   my $totalHours;
   my %weekReport = ();
@@ -373,7 +352,52 @@ sub generate_report {
  
 }
 
-sub dhms2sec {
+sub generate_week_report
+{
+  no warnings 'uninitialized';
+  my $format = '%Y%m%d';
+  my $currentDate;
+  if ($ARGV[0] =~ /^\d{8}$/) {
+    $currentDate = $ARGV[0];
+  }
+  else {
+    $currentDate = get_current_date();
+  }
+
+  my @days = ("Nothing", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+  my $totalTime = 0;
+
+  my $count = 0; # count to 7 days
+  print "$count ";
+  do {
+    $currentDate = Time::Piece->strptime($currentDate, $format);
+
+    my $day = $currentDate->strftime('%u');
+    $day = $days[$day];
+    my $readableDate = $currentDate->strftime('%b. %d %Y');
+    print "\n---------------$day, $readableDate---------------\n";
+
+    $currentDate = $currentDate->ymd('');
+    $time = load_time_at_date($currentDate);
+    $totalTime += generate_report();
+
+    $currentDate = Time::Piece->strptime($currentDate, $format);
+    $currentDate = $currentDate - ONE_DAY;
+    $currentDate = $currentDate->ymd('');
+
+    $count++;
+  } while ($count < 7);
+
+  $time = load_time_at_date($ARGV[0]);
+  $totalTime += generate_report();
+
+  $totalTime = dhms2sec($totalTime);
+  print "\nWeek total time: $totalTime\n";
+  exit();
+}
+
+sub dhms2sec
+{
   my $s= shift;
   my $ts=new Time::Seconds $s;
   return $ts->pretty;
@@ -381,7 +405,8 @@ sub dhms2sec {
 }
 
  
-sub update_last_entry {
+sub update_last_entry 
+{
   my $time = shift;
   my $last_entry = $$time{"LAST"};
   print "Last entry: $last_entry\n" if defined $last_entry;
@@ -395,7 +420,8 @@ sub update_last_entry {
   $$time{"LAST"} = $chargeCode;
 }
  
-sub read_from_file {
+sub read_from_file 
+{
   if (-e $filename) {
     #open my $fh, "<", $filename or die "can't open time card";
     #my %data = ();
@@ -423,7 +449,8 @@ sub read_from_file {
   }
 }
  
-sub write_to_file {
+sub write_to_file
+{
   my $data  = shift;
   open my $fh, ">", $filename;
   print $fh JSON::XS->new->pretty(1)->encode($data);#Data::Dumper->Dump([$data],['*DATA']);
@@ -431,7 +458,8 @@ sub write_to_file {
 }
  
  
-sub usage {
+sub usage 
+{
                 return '
     Description:
  
