@@ -39,7 +39,6 @@ use POSIX qw/strftime/;
 use Getopt::Std;
 use Time::Piece;
 use Time::Seconds;
-use DateTime::Format::Strptime;
 use Cwd 'abs_path';
 use File::Basename;
 
