@@ -469,6 +469,19 @@ sub usage
         time_tracker eases the pain of using several charge numbers per day
         and switching between them. Enter the Charge number and an optional
         description and time_tracker takes care of the rest.
+
+        A QR number is generated for each charge code that is entered. Once 
+        one charge code has been recorded a menu will display: 
+
+          QR Charge Code
+          == ==============
+           0 WORK
+
+        The QR code can be substituted for the charge code
+
+        E.g. "Enter charge code or QR: 0" produces the same result as 
+             "Enter charge code or QR: WORK"
+
  
     Usage: time_tracker [-bcdehrsuv]
  
@@ -488,11 +501,14 @@ sub usage
  
         -e <cn> <amount>
                   Edits the charge numbers total tracked time, where <cn> is the
-                  charge number. When <amount> is positive it will add to the total
+                  charge number. 
+
+                  <amount> is in hours. So 1.2 will translate into 1 hour and
+                  12 minutes. When <amount> is positive it will add to the total
                   tracked time, and subtract when negative. Works with QR numbers.
- 
- 
-                  EX. "time_tracker -e 1702 -1.2" subtracts 1.2 from 1702 total time.
+
+                  EX. If you charge code is WORK.
+                  "time_tracker -e WORK -1.2" subtracts 1.2 from WORK total time.
  
         -h        Displays help menu.
  
@@ -514,7 +530,7 @@ sub usage
                   <date> is entered YYYYmmdd (EX. 20130705 for July 5, 2013).
 
  
-        ';
+';
 }
  
 format CHARGE_CODE_TOP =
