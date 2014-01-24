@@ -18,7 +18,7 @@ Install the missing module using 'cpan \<module name\>'
   
   For example, time tracker requires the module Time::Seconds. To install the module run the command 
   
-        cpan Time::Seconds  
+    cpan Time::Seconds  
   
 
 ## Usage
