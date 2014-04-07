@@ -423,16 +423,6 @@ sub update_last_entry
 sub read_from_file 
 {
   if (-e $filename) {
-    #open my $fh, "<", $filename or die "can't open time card";
-    #my %data = ();
-    #{
-      #local $/; # slurp mode
-      #$data = eval <$fh>;
-      #die "can't recreate time card data from $filename: $@" if $@;
-    #}
-    #close $fh;
-    #return $data;
-   
     my $json;
     {
       local $/; #Enable 'slurp' mode
