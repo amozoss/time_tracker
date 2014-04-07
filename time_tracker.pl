@@ -391,7 +391,7 @@ sub generate_week_report
   } while ($count < 7);
 
   $time = load_time_at_date($ARGV[0]);
-  $totalTime += generate_report();
+  #$totalTime += generate_report();
 
   $totalTime = dhms2sec($totalTime);
   print "\nWeek total time: $totalTime\n";
