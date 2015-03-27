@@ -62,7 +62,7 @@ my $chargeCodeList; # List of recently used charge codes
 # Program options
 ####################
 my %opts;
-getopts('bcdehrsuvw', \%opts);
+getopts('bcdehrstuvwx', \%opts);
  
 print usage() and exit(0) if $opts{'h'};
 my $change = $opts{'c'};
@@ -72,7 +72,9 @@ my $report = $opts{'r'};
 my $stop = $opts{'s'};
 my $update = $opts{'u'};
 my $verbose = $opts{'v'};
+my $tonsOfDetail = $opts{'t'};
 my $weeklyReport = $opts{'w'};
+my $weeklyReportSpecific = $opts{'x'};
 
 # Report formatting
 $~ = 'REPORT';
@@ -101,9 +103,23 @@ if ($report)
   }
   exit();
 }
+elsif ($tonsOfDetail)
+{
+  $~ = 'REPORT_SPECIFIC';
+  $^ = 'REPORT_SPECIFIC_TOP';
+  generate_report_specific();
+  exit();
+}
 elsif ($weeklyReport)
 {
   generate_week_report();
+}
+elsif ($weeklyReportSpecific)
+{
+  $~ = 'REPORT_SPECIFIC';
+  $^ = 'REPORT_SPECIFIC_TOP';
+  generate_week_report(1);
+  exit();
 }
 elsif ($edit)
 {
@@ -311,6 +327,50 @@ sub delete_entry
   my $deletedEntry = delete $$time{$deleteEntry};
   print "Deleting $deleteEntry\n";
 }
+
+sub generate_report_specific
+{
+  print "\n";
+  my $key_top;
+  if ($_[0] =~ m/\d+/) {
+    $key_top = get_charge_code_from_list($_[0]);
+  }
+  else {
+    $key_top = get_charge_code_from_list($ARGV[0]);
+  }
+  my $totalHours;
+  my %weekReport = ();
+ 
+  my $hours;
+  my $array = $$time{$key_top};
+
+  if (ref($array) eq 'ARRAY' ) {
+    for my $index (@$array) {
+      $reportDescription = "";
+      my $partial = ($$index{"end"} - $$index{"start"});
+      $reportHours = dhms2sec($partial);
+      $hours += $partial;
+      print "Partial hour: $partial\n" if $verbose;
+      no warnings 'uninitialized';
+      if ($$index{"text"} ne '') {
+        $reportDescription = $$index{"text"};
+      }
+      write ;
+
+    }
+ 
+    $totalHours += $hours;
+  }
+  my $timeNeeded = (10 - $totalHours)*3600;
+  my $finishTime = time + $timeNeeded;
+ 
+  $finishTime = scalar strftime("%H:%M:%S", localtime ($finishTime));
+  my $totalHoursString = dhms2sec($totalHours);
+ 
+  print "\nTotal: $totalHoursString\n"; 
+  return $totalHours;
+ 
+}
  
 sub generate_report
 {
@@ -381,7 +441,12 @@ sub generate_week_report
 
     $currentDate = $currentDate->ymd('');
     $time = load_time_at_date($currentDate);
-    $totalTime += generate_report();
+    if ($_[0] == 1) {
+      $totalTime += generate_report_specific($ARGV[1]);
+    }
+    else {
+      $totalTime += generate_report();
+    }
 
     $currentDate = Time::Piece->strptime($currentDate, $format);
     $currentDate = $currentDate - ONE_DAY;
@@ -469,7 +534,7 @@ sub usage
              "Enter charge code or QR: WORK"
 
  
-    Usage: time_tracker [-bcdehrsuv]
+    Usage: time_tracker [-bcdehrstuvx]
  
     options (only use one at a time except -v):
  
@@ -504,6 +569,8 @@ sub usage
  
         -s        Stops time being tracked. Useful for lunch breaks or the end
                       of the day.
+
+        -t <cn>   Prints every specific entry and description for a <cn>
              
         -u        Generates and displays an updated report for the current time
                       of the current day.
@@ -514,6 +581,11 @@ sub usage
                   the previous 6 days.
                   If no <date> is specified the current date will be used.
                   <date> is entered YYYYmmdd (EX. 20130705 for July 5, 2013).
+
+        -x <date> <cn>  Generates and displays daily specific reports from the specified <date> to
+                        the previous 6 days for the <cn>.
+                        If no <date> is specified the current date will be used.
+                        <date> is entered YYYYmmdd (EX. 20130705 for July 5, 2013).
 
  
 ';
@@ -528,6 +600,16 @@ format CHARGE_CODE =
 @> @<<<<<<<<<<<<<
 $reportListIndex, $reportChargeCode
 .
+
+format REPORT_SPECIFIC_TOP =
+Time                                 Description
+==================================== ===============================================
+.
+ 
+format REPORT_SPECIFIC =
+@<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+$reportHours, $reportDescription
+.
  
 format REPORT_TOP =
 Charge Code   Hours                                Description
@@ -538,3 +620,4 @@ format REPORT =
 @<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 $reportChargeCode, $reportHours, $reportDescription
 .
+
