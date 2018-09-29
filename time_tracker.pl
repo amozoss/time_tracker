@@ -50,7 +50,7 @@ my $reportDescription;
 my $reportListIndex;
 
 my $scriptDir = dirname(abs_path($0));
-my $filename = "$scriptDir/.time_card";
+my $filename = "$scriptDir/time_card.json";
  
 my $timeCard;# Stores each days data
 my $time; # stores times of each day
@@ -431,31 +431,34 @@ sub generate_week_report
   my $totalTime = 0;
 
   my $count = 0; # count to 7 days
-  do {
+  do {{
     $currentDate = Time::Piece->strptime($currentDate, $format);
+    if( defined $$timeCard{$currentDate->strftime($format)}) {
+      my $day = $currentDate->strftime('%u');
+      $day = $days[$day];
+      my $readableDate = $currentDate->strftime('%b. %d %Y');
+      print "\n---------------$day, $readableDate---------------\n";
 
-    my $day = $currentDate->strftime('%u');
-    $day = $days[$day];
-    my $readableDate = $currentDate->strftime('%b. %d %Y');
-    print "\n---------------$day, $readableDate---------------\n";
+      $currentDate = $currentDate->ymd('');
+      $time = load_time_at_date($currentDate);
+      if ($_[0] == 1) {
+        $totalTime += generate_report_specific($ARGV[1]);
+      }
+      else {
+        $totalTime += generate_report();
+      }
+    } else {
+      $currentDate = $currentDate->ymd('');
+    }
 
-    $currentDate = $currentDate->ymd('');
-    $time = load_time_at_date($currentDate);
-    if ($_[0] == 1) {
-      $totalTime += generate_report_specific($ARGV[1]);
-    }
-    else {
-      $totalTime += generate_report();
-    }
 
     $currentDate = Time::Piece->strptime($currentDate, $format);
     $currentDate = $currentDate - ONE_DAY;
     $currentDate = $currentDate->ymd('');
 
     $count++;
-  } while ($count < 7);
+  }} while ($count < 7);
 
-  $time = load_time_at_date($ARGV[0]);
 
   $totalTime = dhms2sec($totalTime);
   print "\nWeek total time: $totalTime\n";
